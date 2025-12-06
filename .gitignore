@@ -12,3 +12,4 @@ wheels/
 
 # sandbox
 sandbox_workspace/
+*lorem.txt
