@@ -66,7 +66,3 @@ def get_files_info(working_directory, directory="."):
         ret += f"\tError: {str(e)}\n"
 
     return ret
-
-
-if __name__ == "__main__":
-    print(get_schema())

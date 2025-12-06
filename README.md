@@ -14,3 +14,4 @@ For development:
 * install uv
 * install dependencies with uv `uv sync`
 * `uv run main.py <your prompt>`
+* Run lint and tests and get code-coverage: `make lint test test_html`
