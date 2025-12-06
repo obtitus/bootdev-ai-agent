@@ -1,0 +1,16 @@
+# Use a Python base image
+FROM python:3.12-slim
+
+# Set the working directory for future commands
+WORKDIR /usr/src/app
+
+# (Optional: If your calculator needs external packages)
+# COPY calculator/requirements.txt .
+# RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire calculator directory into the container's current working directory (/usr/src/app)
+# This places your code at /usr/src/app/calculator/main.py
+#COPY calculator calculator/
+
+# The command is now defined in docker-compose.yml, but you could define a default 
+# entrypoint here if you prefer.

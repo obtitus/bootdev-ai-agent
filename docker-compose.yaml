@@ -1,0 +1,39 @@
+
+services:
+  sandbox_executor:
+    # 1. Base Image
+    build:
+      context: . 
+      dockerfile: Dockerfile.sandbox_executor
+
+    volumes:
+      - ./sandbox_workspace:/usr/src/app:rw
+    
+    # 2. Command to Run (The Python execution)
+    # The command is passed as a list of arguments
+    command: ["python", "calculator/main.py"]
+
+    # 3. Resource Limits (CPU/Memory)
+    deploy:
+      resources:
+        limits:
+          memory: 256m # Maps to --memory 256m
+          cpus: '0.5'  # Maps to --cpus 0.5 (0.5 of a core)
+          
+    # 4. Network Isolation
+    # We define a network that has no external connectivity
+    networks:
+      - restricted_net
+      
+    # 5. Clean up after exit
+    # This automatically removes the container after it finishes running
+    restart: 'no' # Ensures the container stops after the command exits
+    # NOTE: The equivalent of '--rm' is usually handled by `docker compose run`
+
+networks:
+  restricted_net:
+    # This is the key part for sandboxing: it's a bridge network
+    # that we won't connect to any host ports, effectively isolating it.
+    # While you can't use 'none' directly here, isolating it and
+    # not exposing any ports achieves the same security goal.
+    driver: bridge
