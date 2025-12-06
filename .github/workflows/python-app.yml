@@ -27,10 +27,8 @@ jobs:
       with:
         version: "latest"
     - name: Install dependencies
-      run: uv sync -p 3.12
+      run: make install
     - name: Lint with flake8
-      run: |
-        make lint
+      run: make lint
     - name: Run tests with unittest
-      run: |
-        make test
+      run: make test

@@ -2,6 +2,7 @@ run:
 	docker compose run --rm sandbox_executor python calculator/main.py
 
 install:
+	uv sync -p 3.12
 	docker compose build
 	-mkdir sandbox_workspace
 	cp -r calculator sandbox_workspace/calculator
@@ -26,3 +27,5 @@ clean:
 	-docker rmi -f sandbox-exec
 	-docker system prune -a --volumes --force
 	-rm -rf sandbox_workspace/
+	-rm -rf htmlcov
+	-rm .coverage
