@@ -61,7 +61,9 @@ def _run_python_file(working_directory, file_path: str, args=None) -> tuple[str,
     )
     if result.returncode != 0:
         if result.returncode == 2 and "can't open file" in result.stderr:
-            raise FileNotFoundError(f'"{file_path}" is not a Python file.')
+            raise FileNotFoundError(
+                f'"{file_path}" is not a Python file? Unable to run {cmd}: {result.stderr}'
+            )
         raise RuntimeError(
             f"Process exited with code {result.returncode}\nSTDOUT:{result.stdout}\nSTDERR:{result.stderr}"
         )

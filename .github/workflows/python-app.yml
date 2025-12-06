@@ -36,4 +36,5 @@ jobs:
         uv run flake8 . --exclude ".venv ./sandbox_workspace" --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
     - name: Run tests
       run: |
+        make install run
         uv run tests.py
