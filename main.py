@@ -7,26 +7,30 @@ from google import genai
 from google.genai import types
 from dotenv import load_dotenv
 
-load_dotenv()
-
 import argparse
 
 # this project
 from functions import get_files_info, get_file_content, run_python_file, write_file
 
+load_dotenv()
+
 system_prompt = """
 You are a helpful AI coding agent.
 
-When a user asks a question or makes a request, make a function call plan. You can perform the following operations without asking:
+When a user asks a question or makes a request, make a function call plan.
+You can perform the following operations without asking:
 
 - List files and directories
 - Read file contents
 - Execute Python files with optional arguments
 - Write or overwrite files
 
-All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
+All paths you provide should be relative to the working directory.
+You do not need to specify the working directory in your function calls
+as it is automatically injected for security reasons.
 
-Keep as much of the existing code as you can, make only the neccesary changes to resolve the issue without replacing the entire code.
+Keep as much of the existing code as you can, make only the neccesary changes
+to resolve the issue without replacing the entire code.
 """
 available_functions = types.Tool(
     function_declarations=[
@@ -71,7 +75,7 @@ def call_function(function_call_part: types.FunctionCall, verbose: bool = False)
     else:
         print(f" - Calling function: {name}")
 
-    if not name in functions:
+    if name not in functions:
         response = {"error": f"Unknown function: {name}"}
     else:
         cwd = working_directory
@@ -101,6 +105,61 @@ def get_function_response(ret):
     return resp
 
 
+def get_parts_from_response(resp):
+    for candidate in getattr(resp, "candidates", []):
+        for key, content in getattr(candidate, "content", []):
+            if key == "parts":
+                for part in content:
+                    yield part
+
+
+def call_agent(prompt, messages, config, verbose=False):
+    is_done = False
+    resp = client.models.generate_content(
+        model="gemini-2.0-flash-001",
+        contents=messages,
+        config=config,
+    )
+
+    # Add what the agent wanted to do to the conversation:
+    response_text = ""
+    for part in get_parts_from_response(resp):
+        messages.append(types.Content(role="model", parts=[part]))
+        if verbose:
+            d = part.model_dump(exclude_unset=True)
+            print("part", d)
+        if part.text is not None:
+            response_text += part.text
+
+    print("Agent:", response_text)
+    # Run what the agent wants and add it to the conversation
+    func_responses = list()
+    if resp.function_calls:
+        for item in resp.function_calls:
+            # print(f"Calling function: {item.name}({item.args})")
+            ret = call_function(item, verbose=verbose)
+            messages.append(ret)
+            func_responses.extend(get_function_response(ret))
+
+    # Show what the agent did
+    for item in func_responses:
+        for key in item:
+            print(f"func_response[{key}] = {item[key]}")
+
+    if verbose:
+        print(f"User prompt: {prompt}")
+        if resp.usage_metadata is not None:
+            print(f"Prompt tokens: {resp.usage_metadata.prompt_token_count}")
+            print(f"Response tokens: {resp.usage_metadata.candidates_token_count}")
+
+    # Done?
+    if response_text != "" and len(func_responses) == 0:
+        print("Done.")
+        is_done = True
+
+    return messages, is_done
+
+
 def main(client: genai.Client, args):
     prompt = args.prompt
     verbose = args.verbose
@@ -113,48 +172,8 @@ def main(client: genai.Client, args):
     )
 
     for iteration in range(max_iterations):
-        resp = client.models.generate_content(
-            model="gemini-2.0-flash-001",
-            contents=messages,
-            config=config,
-        )
-
-        # Add what the agent wanted to do to the conversation:
-        response_text = ""
-        for candidate in getattr(resp, "candidates", []):
-            for key, content in getattr(candidate, "content", []):
-                if key == "parts":
-                    for part in content:
-                        d = part.model_dump(exclude_unset=True)
-                        messages.append(types.Content(role="model", parts=[part]))
-                        # print("part", d)
-                        if part.text is not None:
-                            response_text += part.text
-
-        print("Agent:", response_text)
-        # Run what the agent wants and add it to the conversation
-        func_responses = list()
-        if resp.function_calls:
-            for item in resp.function_calls:
-                # print(f"Calling function: {item.name}({item.args})")
-                ret = call_function(item, verbose=True)
-                messages.append(ret)
-                func_responses.extend(get_function_response(ret))
-
-        # Show what the agent did
-        for item in func_responses:
-            for key in item:
-                print(f"func_response[{key}] = {item[key]}")
-
-        if verbose:
-            print(f"User prompt: {prompt}")
-            if resp.usage_metadata is not None:
-                print(f"Prompt tokens: {resp.usage_metadata.prompt_token_count}")
-                print(f"Response tokens: {resp.usage_metadata.candidates_token_count}")
-
-        # Done?
-        if response_text != "" and len(func_responses) == 0:
-            print("Done.")
+        messages, is_done = call_agent(prompt, messages, config, verbose=verbose)
+        if is_done:
             break
 
 

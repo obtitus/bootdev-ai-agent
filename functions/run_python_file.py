@@ -45,7 +45,8 @@ def _run_python_file(working_directory, file_path: str, args=None) -> tuple[str,
     if not (file_path.endswith(".py")):
         raise ValueError(f'"{file_path}" is not a Python file.')
 
-    # FIXME: THis checks outside the sandbox
+    # Ugly, this checks outside of sanbox, so fails when the AI creates a file,
+    # Attempt to run the file and catch the error instead
     # if not os.path.isfile(path):
     #    raise FileNotFoundError(f'File "{file_path}" not found.')
 
@@ -59,6 +60,8 @@ def _run_python_file(working_directory, file_path: str, args=None) -> tuple[str,
         cmd, capture_output=True, text=True, timeout=30, cwd=working_directory
     )
     if result.returncode != 0:
+        if result.returncode == 2 and "can't open file" in result.stderr:
+            raise FileNotFoundError(f'"{file_path}" is not a Python file.')
         raise RuntimeError(
             f"Process exited with code {result.returncode}\nSTDOUT:{result.stdout}\nSTDERR:{result.stderr}"
         )
