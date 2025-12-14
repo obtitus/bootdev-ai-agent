@@ -11,8 +11,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
-  packages: write
+  contents: write
 
 jobs:
   build:
@@ -56,4 +55,4 @@ jobs:
       - name: Create GitHub Release and attach dist/*
         uses: ncipollo/release-action@v1
         with:
-          files: dist/*
+          artifacts: dist/*
