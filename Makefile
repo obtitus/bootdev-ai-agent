@@ -30,11 +30,11 @@ dist:
 dist/htmlcov/index.html: test dist
 	uv run coverage html -d dist/htmlcov
 
-dist/main: dist
+dist/bootdev-ai-agent: dist
 	uv run pyinstaller --onefile main.py --distpath dist --name bootdev-ai-agent
 
-create_dist: install lint dist/htmlcov/index.html dist/main
-	echo "Distribution created in dist/ directory."
+create_dist: install lint dist/htmlcov/index.html dist/bootdev-ai-agent
+	git ls-files | tar -czf dist/source.tar.gz -T -
 
 test_dist:
 	docker build -t bootdev-main-test .
@@ -48,4 +48,5 @@ clean:
 	-rm -rf sandbox_workspace/
 	-rm -rf htmlcov
 	-rm .coverage
-	-rm -rf dist
+	-rm -rf dist build
+	-rm bootdev-ai-agent.spec

@@ -9,7 +9,7 @@ Howto:
 * install [docker](https://docs.docker.com/engine/install/)
 * run `make install` to build the docker image
 * test the docker sandbox image with `make test_sandbox`
-* On linux/ubuntu use the pre-generated `bootdev-ai-agent` executable
+* On linux/ubuntu use the pre-generated `bootdev-ai-agent` executable under [release](https://github.com/obtitus/bootdev-ai-agent/releases)
 
 For development:
 * install [uv](https://docs.astral.sh/uv/getting-started/installation/)
