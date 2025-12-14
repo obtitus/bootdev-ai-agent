@@ -27,14 +27,15 @@ test:
 dist:
 	mkdir -p dist
 
-dist/htmlcov/index.html: test dist
-	uv run coverage html -d dist/htmlcov
+htmlcov/index.html: test dist
+	uv run coverage html -d htmlcov
 
 dist/bootdev-ai-agent: dist
 	uv run pyinstaller --onefile main.py --distpath dist --name bootdev-ai-agent
 
-create_dist: install lint dist/htmlcov/index.html dist/bootdev-ai-agent
+create_dist: install lint htmlcov/index.html dist/bootdev-ai-agent
 	git ls-files | tar -czf dist/source.tar.gz -T -
+	tar -czf dist/htmlcov.tar.gz htmlcov
 
 test_dist:
 	docker build -t bootdev-main-test .
