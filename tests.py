@@ -95,8 +95,8 @@ class TestRunPythonFile(unittest.TestCase):
             _ = run_python_file._run_python_file("calculator", "lorem.txt", ["2 + 2"])
 
     def test_manual(self):
-        print(run_python_file.run_python_file("calculator", "main.py"))
         print(run_python_file.run_python_file("calculator", "main.py", ["3 + 5"]))
+        print(run_python_file.run_python_file("calculator", "main.py"))
         print(run_python_file.run_python_file("calculator", "tests.py"))
         print(run_python_file.run_python_file("calculator", "../main.py"))
         print(run_python_file.run_python_file("calculator", "nonexistent.py"))

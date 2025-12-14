@@ -1,14 +1,20 @@
-run:
-	docker compose run --rm sandbox_executor python calculator/main.py
+MAIN_ARGS ?= "1 + 1"
+.PHONY: run install install_dev create_dist clean lint test
+
+test_sandbox:
+	docker compose run --rm --quiet sandbox_executor python calculator/main.py $(MAIN_ARGS)
 
 install:
-	uv sync -p 3.12
 	docker compose build
 	-mkdir sandbox_workspace
 	cp -r calculator sandbox_workspace/calculator
 
-# 	 stop the build if there are Python syntax errors or undefined names
-#    exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+# uv sync -p 3.12 --no-dev if you just want to run main.py
+install_dev: install
+	uv sync -p 3.12 --dev
+
+# stop the build if there are Python syntax errors or undefined names
+# exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
 lint:
 	uv run flake8 . --exclude ".venv ./sandbox_workspace" --count --select=E9,F63,F7,F82 --show-source --statistics
 	uv run flake8 . --exclude ".venv ./sandbox_workspace" --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
@@ -18,8 +24,21 @@ test:
 	uv run coverage run tests.py
 	uv run coverage report
 
-test_html:
-	uv run coverage html
+dist:
+	mkdir -p dist
+
+dist/htmlcov/index.html: test dist
+	uv run coverage html -d dist/htmlcov
+
+dist/main: dist
+	uv run pyinstaller --onefile main.py --distpath dist --name bootdev-ai-agent
+
+create_dist: install lint dist/htmlcov/index.html dist/main
+	echo "Distribution created in dist/ directory."
+
+test_dist:
+	docker build -t bootdev-main-test .
+	docker run --rm bootdev-main-test --help
 
 clean:
 	-rm -rf .venv
@@ -29,3 +48,4 @@ clean:
 	-rm -rf sandbox_workspace/
 	-rm -rf htmlcov
 	-rm .coverage
+	-rm -rf dist

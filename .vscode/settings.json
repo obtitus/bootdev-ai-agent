@@ -1,3 +1,5 @@
 {
-    "python.analysis.extraPaths": ["${workspaceFolder}", "${workspaceFolder}/.venv/lib/python3.12/site-packages"]
+    "python.analysis.extraPaths": ["${workspaceFolder}", "${workspaceFolder}/.venv/lib/python3.12/site-packages"],
+    "terminal.integrated.cursorStyle": "block",
+    "terminal.integrated.cursorBlinking": true
 }
