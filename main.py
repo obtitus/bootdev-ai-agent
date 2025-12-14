@@ -12,8 +12,6 @@ import argparse
 # this project
 from functions import get_files_info, get_file_content, run_python_file, write_file
 
-load_dotenv()
-
 system_prompt = """
 You are a helpful AI coding agent.
 
@@ -52,12 +50,6 @@ sandbox = Path("sandbox_workspace")
 # scripts only want "calculator" as root, maybe fix in that function?
 working_directory_run = "calculator"
 working_directory = sandbox / "calculator"
-# # Remove destination to ensure a clean copy (comment out to merge instead)
-# if sandbox.exists():
-#     shutil.rmtree(sandbox)
-os.makedirs(sandbox, exist_ok=True)
-shutil.copytree("calculator", working_directory, dirs_exist_ok=True)
-print("working_directory", working_directory)
 
 
 class ExitOneArgumentParser(argparse.ArgumentParser):
@@ -161,6 +153,13 @@ def call_agent(prompt, messages, config, verbose=False):
 
 
 def main(client: genai.Client, args):
+    # # Remove destination to ensure a clean copy (comment out to merge instead)
+    # if sandbox.exists():
+    #     shutil.rmtree(sandbox)
+    os.makedirs(sandbox, exist_ok=True)
+    shutil.copytree("calculator", working_directory, dirs_exist_ok=True)
+    print("working_directory", working_directory)
+
     prompt = args.prompt
     verbose = args.verbose
     max_iterations = 20
@@ -187,6 +186,7 @@ if __name__ == "__main__":
     )
     args = argparser.parse_args()
 
+    load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
     main(client, args)

@@ -10,7 +10,7 @@ WORKDIR /usr/src/app
 
 # Copy the entire calculator directory into the container's current working directory (/usr/src/app)
 # This places your code at /usr/src/app/calculator/main.py
-#COPY calculator calculator/
+COPY calculator calculator/
 
-# The command is now defined in docker-compose.yml, but you could define a default 
+# The command is now defined in docker-compose.yml, but you could define a default
 # entrypoint here if you prefer.

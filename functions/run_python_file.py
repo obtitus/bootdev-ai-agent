@@ -45,7 +45,7 @@ def _run_python_file(working_directory, file_path: str, args=None) -> tuple[str,
     if not (file_path.endswith(".py")):
         raise ValueError(f'"{file_path}" is not a Python file.')
 
-    # Ugly, this checks outside of sanbox, so fails when the AI creates a file,
+    # Ugly, this checks outside of sandbox, so fails when the AI creates a file,
     # Attempt to run the file and catch the error instead
     # if not os.path.isfile(path):
     #    raise FileNotFoundError(f'File "{file_path}" not found.')
@@ -68,7 +68,17 @@ def _run_python_file(working_directory, file_path: str, args=None) -> tuple[str,
             f"Process exited with code {result.returncode}\nSTDOUT:{result.stdout}\nSTDERR:{result.stderr}"
         )
 
-    return result.stdout, result.stderr
+    # Trim any container creation messages from stderr
+    stderr = list()
+    trim_end = (" Created", " Creating")
+    trim_contains = "Container "
+    for line in result.stderr.splitlines():
+        if trim_contains in line and line.strip().endswith(trim_end):
+            continue
+        stderr.append(line)
+    stderr = "\n".join(stderr)
+
+    return result.stdout, stderr
 
 
 def run_python_file(working_directory, file_path: str, args=None) -> str:
